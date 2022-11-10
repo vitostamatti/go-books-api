@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  database:
+    container_name: database
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-admin}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-admin}
+      - POSTGRES_DB=${POSTGRES_DB:-books}
+      - POSTGRESS_HOST=${POSTGRESS_HOST:-database}
+    ports:
+      - 5432:5432
+    volumes:
+      - db-data:/var/lib/postgresql/data 
+    networks:
+      - booksapp
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@gmail.com}
+      - PGADMIN_DEFAULT_PASSWORD=${POSTGRES_PASSWORD:-admin}
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - booksapp
+
+  api:
+    build: .
+    container_name: api
+    restart: on-failure
+    ports:
+      - "8000:8000"   
+    environment:
+      - API_PORT=${API_PORT:-8000}
+      - POSTGRES_USER=${POSTGRES_USER:-admin}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-admin}
+      - POSTGRES_DB=${POSTGRES_DB:-books}
+      - POSTGRESS_HOST=${POSTGRESS_HOST:-database}
+    networks:
+      - booksapp
+  
+volumes:
+  db-data:
+  pgadmin-data: 
+
+networks:
+  booksapp:
+    driver: bridge
